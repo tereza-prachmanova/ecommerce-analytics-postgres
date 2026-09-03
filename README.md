@@ -1,6 +1,6 @@
 # ecommerce-analytics-postgres
 End-to-end SQL analytics project built on PostgreSQL. Transforming raw e-commerce data through Silver and Gold layers to deliver actionable business insights.
-Dataset from [Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
+Dataset is from [Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce).
 
 Business questions:
 1) What is the total month revenue of e-shop and what is the percentage month-on-month growth rate? Is there any seasonality in the data?
