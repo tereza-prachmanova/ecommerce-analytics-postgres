@@ -479,23 +479,48 @@ SELECT
 	payment_type,
 	COUNT(order_id) AS order_id_count
 FROM bronze.olist_order_payments_dataset
-GROUP BY payment_installments, payment_type
-HAVING payment_installments = 0;
+WHERE payment_installments = 0
+GROUP BY payment_installments, payment_type;
+
+SELECT 
+	oopd.payment_type,
+	ood.order_status,
+	oopd.payment_value,
+	oopd.payment_sequential,
+	ood.order_id
+FROM bronze.olist_order_payments_dataset oopd
+LEFT JOIN bronze.olist_orders_dataset ood 
+	ON oopd.order_id = ood.order_id
+WHERE oopd.payment_installments = 0;
+
+SELECT 
+	oopd.payment_type,
+	ood.order_status,
+	oopd.payment_value,
+	oopd.payment_sequential,
+	ood.order_id
+FROM bronze.olist_order_payments_dataset oopd
+LEFT JOIN bronze.olist_orders_dataset ood 
+	ON oopd.order_id = ood.order_id
+WHERE ood.order_id IN ('1a57108394169c0b47d8f876acc9ba2d', '744bade1fcf9ff3f31d860ace076d422');
 
 SELECT 
 	payment_value,
 	payment_type,
 	COUNT(order_id) AS order_id_count
 FROM bronze.olist_order_payments_dataset
-GROUP BY payment_value, payment_type
-HAVING payment_value = 0;
+WHERE payment_value = 0
+GROUP BY payment_value, payment_type;
 
 -- Values in the payment_type column are consistent.
 -- No negative values were found.
 -- Zero payment_installments were found in 2 credit card payment records.
+-- Further investigation showed that both orders were delivered,
+-- both payments have payment_sequential = 2, and no additional
+-- payment records were found for these orders.
+-- The cause of the zero installment values remains unclear.
 -- Zero payment_value was found in 9 payment records: 6 vouchers and 3 not_defined.
--- These values were flagged as potentially unusual but retained because
--- their correct values cannot be reliably inferred.
+-- These unusual values were retained in Silver because their correct values cannot be reliably inferred.
 -- High values may be further examined during EDA.
 
 -- olist_order_payments_dataset summary:
@@ -510,6 +535,9 @@ HAVING payment_value = 0;
 ---- Values in payment_type column are consistent.
 ---- No negative values were found. 
 ---- Zero payment_installments were found in 2 credit card payment records.
+---- Both orders were delivered and both payments have payment_sequential = 2.
+---- No other payment records were found for these orders.
+---- The cause remains unclear; original values were retained in Silver.
 ---- Zero payment_value was found in 9 payment records: 6 vouchers and 3 not_defined.
 ---- These values were flagged as potentially unusual but retained because
 ---- their correct values cannot be reliably inferred.
