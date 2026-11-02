@@ -225,18 +225,25 @@ FROM silver.order_payments;
 -- bronze.olist_order_reviews_dataset -> silver.order_reviews
 
 -- Bronze conclusion:
--- Column review_creation_date has data type VARCHAR and contain information about date - requires changing data type to
--- DATE.
--- Column review_answer_timestamp has data type VARCHAR and contain information about date and time - requires changing
--- data type to TIMESTAMP.
+-- Columns review_creation_date and review_answer_timestamp require conversion from VARCHAR to DATE and TIMESTAMP.
+-- Empty strings were identified in review_comment_title and review_comment_message but were initially considered
+-- acceptable.
+-- During EDA, these values were found to affect COUNT() results.
+-- Therefore, empty and whitespace-only values are converted to NULL in Silver to ensure accurate aggregation.
 
-CREATE VIEW silver.order_reviews AS 
+CREATE OR REPLACE VIEW silver.order_reviews AS 
 SELECT
 	review_id,
 	order_id,
 	review_score,
-	review_comment_title,
-	review_comment_message,
+	CASE 
+		WHEN TRIM(review_comment_title) = '' THEN NULL
+		ELSE review_comment_title
+	END AS review_comment_title,
+	CASE 
+		WHEN TRIM(review_comment_message) = '' THEN NULL
+		ELSE review_comment_message
+	END AS review_comment_message,
 	CAST(review_creation_date AS DATE) AS review_creation_date,
 	CAST(review_answer_timestamp AS TIMESTAMP) AS review_answer_timestamp 
 FROM bronze.olist_order_reviews_dataset;
@@ -248,6 +255,17 @@ FROM bronze.olist_order_reviews_dataset;
 
 SELECT 
 	COUNT(*) AS row_count
+FROM silver.order_reviews;
+
+-- checking whether there are no empty values
+SELECT 
+	COUNT(CASE WHEN TRIM(review_comment_title) = '' THEN 1 END) AS empty_review_comment_title_count,
+	COUNT(CASE WHEN TRIM(review_comment_message) = '' THEN 1 END) AS empty_review_comment_message_count
+FROM bronze.olist_order_reviews_dataset;
+
+SELECT 
+	COUNT(CASE WHEN TRIM(review_comment_title) = '' THEN 1 END) AS empty_review_comment_title_count,
+	COUNT(CASE WHEN TRIM(review_comment_message) = '' THEN 1 END) AS empty_review_comment_message_count
 FROM silver.order_reviews;
 
 -- checking whether the transformation was done correctly
