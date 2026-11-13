@@ -1,5 +1,7 @@
 -- STANDARDIZATION AND CREATION OF VIEWS --
 ------------------------------------------------------------------------------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS silver;
+
 -- bronze.olist_customers_dataset -> silver.customers
 
 -- Bronze conclusion:
